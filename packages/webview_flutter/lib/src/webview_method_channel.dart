@@ -76,11 +76,13 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
   Future<void> loadUrl(
     String url,
     Map<String, String>? headers,
+    bool? interceptNavigation,
   ) async {
     assert(url != null);
     return _channel.invokeMethod<void>('loadUrl', <String, dynamic>{
       'url': url,
       'headers': headers,
+      'interceptNavigation': interceptNavigation,
     });
   }
 

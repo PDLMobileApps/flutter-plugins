@@ -176,15 +176,19 @@ abstract class WebViewPlatformController {
   /// If `headers` is not null and the URL is an HTTP URL, the key value paris in `headers` will
   /// be added as key value pairs of HTTP headers for the request.
   ///
+  /// If `interceptNavigation` is set to true, the navigation delegate in the webview will be called 
+  /// on Android (which is not happening by default). In iOS this parameter is ignored.
+  ///
   /// `url` must not be null.
   ///
   /// Throws an ArgumentError if `url` is not a valid URL string.
   Future<void> loadUrl(
     String url,
     Map<String, String>? headers,
+    bool? interceptNavigation,
   ) {
     throw UnimplementedError(
-        "WebView loadUrl is not implemented on the current platform");
+      "WebView loadUrl is not implemented on the current platform");
   }
 
   /// Updates the webview settings.

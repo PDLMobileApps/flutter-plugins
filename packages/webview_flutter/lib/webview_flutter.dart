@@ -636,6 +636,9 @@ class WebViewController {
   ///
   /// If `headers` is not null and the URL is an HTTP URL, the key value paris in `headers` will
   /// be added as key value pairs of HTTP headers for the request.
+  /// 
+  /// If `interceptNavigation` is set to true, the navigation delegate in the webview will be called 
+  /// on Android (which is not happening by default). In iOS this parameter is ignored.
   ///
   /// `url` must not be null.
   ///
@@ -643,10 +646,11 @@ class WebViewController {
   Future<void> loadUrl(
     String url, {
     Map<String, String>? headers,
+    bool? interceptNavigation,
   }) async {
     assert(url != null);
     _validateUrlString(url);
-    return _webViewPlatformController.loadUrl(url, headers);
+    return _webViewPlatformController.loadUrl(url, headers, interceptNavigation);
   }
 
   /// Accessor to the current URL that the WebView is displaying.

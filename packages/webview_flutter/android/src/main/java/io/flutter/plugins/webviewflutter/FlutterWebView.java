@@ -251,11 +251,18 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
     Map<String, Object> request = (Map<String, Object>) methodCall.arguments;
     String url = (String) request.get("url");
     Map<String, String> headers = (Map<String, String>) request.get("headers");
+    boolean interceptNavigation = request.get("interceptNavigation") != null ? 
+        (boolean) request.get("interceptNavigation") : false;
+
     if (headers == null) {
       headers = Collections.emptyMap();
     }
-    webView.loadUrl(url, headers);
-    result.success(null);
+    if (interceptNavigation) {
+      flutterWebViewClient.loadUrl(webView, url, headers);
+    } else {
+      webView.loadUrl(url, headers);
+      result.success(null);
+    }
   }
 
   private void canGoBack(Result result) {

@@ -1,3 +1,8 @@
+## 2.0.9+1
+
+* Fixed inconsistent navigation delegate behavior between Android and iOS with loadUrl 
+([flutter/issues/47218](https://github.com/flutter/flutter/issues/47218))
+
 ## 2.0.9
 
 * Add iOS UI integration test target.

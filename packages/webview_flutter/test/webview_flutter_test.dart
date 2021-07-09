@@ -129,6 +129,40 @@ void main() {
     expect(await controller!.currentUrl(), equals('https://flutter.io'));
   });
 
+  testWidgets('Intercept in loadUrl', (WidgetTester tester) async {
+    WebViewController? controller;
+    await tester.pumpWidget(
+      WebView(
+        onWebViewCreated: (WebViewController webViewController) {
+          controller = webViewController;
+        },
+        navigationDelegate: (NavigationRequest request) {
+          NavigationDecision decision = NavigationDecision.navigate;
+          if (request.url.startsWith('https://youtube.com')) {
+            decision = NavigationDecision.prevent;
+          } else {
+            decision = NavigationDecision.navigate;
+          }
+          return decision;
+        }
+      ),
+    );
+
+    expect(controller, isNotNull);
+
+    await controller!.loadUrl('https://flutter.io', interceptNavigation: true);
+    expect(await controller!.currentUrl(), equals('https://flutter.io'));
+
+    await controller!.loadUrl('https://youtube.com', interceptNavigation: true);
+    expect(await controller!.currentUrl(), equals('https://flutter.io'));
+
+    await controller!.loadUrl('https://youtube.com', interceptNavigation: false);
+    expect(await controller!.currentUrl(), equals('https://youtube.com'));
+
+    await controller!.loadUrl('https://youtube.com');
+    expect(await controller!.currentUrl(), equals('https://youtube.com'));
+  });
+
   testWidgets("Can't go back before loading a page",
       (WidgetTester tester) async {
     WebViewController? controller;
@@ -964,7 +998,8 @@ class FakePlatformWebView {
     switch (call.method) {
       case 'loadUrl':
         final Map<dynamic, dynamic> request = call.arguments;
-        _loadUrl(request['url']);
+        bool interceptNavigation = request['interceptNavigation'] != null ? request['interceptNavigation'] : false;
+        _loadUrl(request['url'], interceptNavigation: interceptNavigation);
         return Future<void>.sync(() {});
       case 'updateSettings':
         if (call.arguments['jsMode'] != null) {
@@ -1096,11 +1131,29 @@ class FakePlatformWebView {
         .handlePlatformMessage(channel.name, data, (ByteData? data) {});
   }
 
-  void _loadUrl(String? url) {
-    history = history.sublist(0, currentPosition + 1);
-    history.add(url);
-    currentPosition++;
-    amountOfReloadsOnCurrentUrl = 0;
+  void _loadUrl(String? url, {bool? interceptNavigation = false}) {
+    if(!interceptNavigation!) {
+      history = history.sublist(0, currentPosition + 1);
+      history.add(url);
+      currentPosition++;
+      amountOfReloadsOnCurrentUrl = 0;
+    } else {
+      final StandardMethodCodec codec = const StandardMethodCodec();
+        final Map<String, dynamic> arguments = <String, dynamic>{
+          'url': url,
+          'isForMainFrame': true
+        };
+        final ByteData data =
+            codec.encodeMethodCall(MethodCall('navigationRequest', arguments));
+        _ambiguate(ServicesBinding.instance)!
+            .defaultBinaryMessenger
+            .handlePlatformMessage(channel.name, data, (ByteData? data) {
+          final bool allow = codec.decodeEnvelope(data!);
+          if (allow) {
+            _loadUrl(url);
+          }
+        });
+    }
   }
 }
 
@@ -1201,12 +1254,14 @@ class MyWebViewPlatformController extends WebViewPlatformController {
 
   String? lastUrlLoaded;
   Map<String, String>? lastRequestHeaders;
+  bool? lastNavigationIntercepted;
 
   @override
-  Future<void> loadUrl(String url, Map<String, String>? headers) async {
+  Future<void> loadUrl(String url, Map<String, String>? headers, bool? interceptNavigation) async {
     equals(1, 1);
     lastUrlLoaded = url;
     lastRequestHeaders = headers;
+    lastNavigationIntercepted = interceptNavigation;
   }
 }
 

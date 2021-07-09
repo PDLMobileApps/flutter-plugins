@@ -157,6 +157,14 @@ class FlutterWebViewClient {
     }
   }
 
+  public void loadUrl(WebView webView, String url, Map<String, String> headers) {
+    if (!this.hasNavigationDelegate) {
+      webView.loadUrl(url, headers);
+    } else {
+      this.notifyOnNavigationRequest(url, headers, webView, true);
+    }
+  }
+
   // This method attempts to avoid using WebViewClientCompat due to bug
   // https://bugs.chromium.org/p/chromium/issues/detail?id=925887. Also, see
   // https://github.com/flutter/flutter/issues/29446.
@@ -297,4 +305,5 @@ class FlutterWebViewClient {
       }
     }
   }
+
 }
