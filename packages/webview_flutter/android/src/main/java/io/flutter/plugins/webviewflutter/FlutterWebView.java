@@ -95,9 +95,9 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
 
     Boolean usesHybridComposition = (Boolean) params.get("usesHybridComposition");
     webView =
-        (usesHybridComposition)
-            ? new WebView(context)
-            : new InputAwareWebView(context, containerView);
+            (usesHybridComposition)
+                    ? new WebView(context)
+                    : new InputAwareWebView(context, containerView);
 
     displayListenerProxy.onPostWebViewInitialization(displayManager);
 
@@ -105,6 +105,12 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
     // Allow local storage.
     webView.getSettings().setDomStorageEnabled(true);
     webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+
+    // Allow zoom.
+    webView.getSettings().setSupportZoom(true);
+    webView.getSettings().setBuiltInZoomControls(true);
+    // Hide zoom buttons.
+    webView.getSettings().setDisplayZoomControls(false);
 
     // Multi windows is set with FlutterWebChromeClient by default to handle internal bug: b/159892679.
     webView.getSettings().setSupportMultipleWindows(true);
