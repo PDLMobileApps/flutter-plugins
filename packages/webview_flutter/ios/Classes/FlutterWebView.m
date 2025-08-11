@@ -103,6 +103,10 @@
       [weakSelf onMethodCall:call result:result];
     }];
 
+    if (@available(iOS 16.4, *)) {
+        _webView.inspectable = true;
+    }
+
     if (@available(iOS 11.0, *)) {
       _webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
       if (@available(iOS 13.0, *)) {
